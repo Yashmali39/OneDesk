@@ -1,0 +1,114 @@
+{
+  "complaints": [
+    {
+      "_id": "c1",
+      "title": "Street light not working",
+      "department": "Electricity",
+      "status": "Pending",
+      "description": "Street light in Sector 7 is not working.",
+      "address": "Sector 7, Main Road",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "priority": "",
+      "assignedTo": "Electricity Department"
+    },
+    {
+      "_id": "c2",
+      "title": "Power outage in residential area",
+      "department": "Electricity",
+      "status": "In Progress",
+      "description": "Complete power failure in Sector 5 since morning, affecting 50+ households.",
+      "address": "Sector 5, Block A",
+      "createdAt": "2024-01-14T14:20:00Z",
+      "priority": "",
+      "assignedTo": "Emergency Response Team"
+    },
+    {
+      "_id": "c3",
+      "title": "Faulty transformer",
+      "department": "Electricity",
+      "status": "Resolved",
+      "description": "Transformer making unusual noise and overheating. Repaired and replaced.",
+      "address": "Near Community Center, Sector 3",
+      "createdAt": "2024-01-10T09:15:00Z",
+      "priority": "",
+      "assignedTo": "Technical Maintenance Crew"
+    },
+    {
+      "_id": "c4",
+      "title": "Exposed electrical wires",
+      "department": "Electricity",
+      "status": "Pending",
+      "description": "Dangerous exposed wires near park area, safety hazard for children.",
+      "address": "Central Park, Sector 3",
+      "createdAt": "2024-01-16T08:45:00Z",
+      "priority": "",
+      "assignedTo": "Safety Inspection Team"
+    },
+    {
+      "_id": "c5",
+      "title": "Voltage fluctuation issues",
+      "department": "Electricity",
+      "status": "In Progress",
+      "description": "Frequent voltage fluctuations damaging electronic appliances in Sector 8.",
+      "address": "Sector 8, Block D",
+      "createdAt": "2024-01-13T11:20:00Z",
+      "priority": "",
+      "assignedTo": "Technical Team"
+    },
+    {
+      "_id": "c6",
+      "title": "Electric meter not working",
+      "department": "Electricity",
+      "status": "Pending",
+      "description": "Electric meter stopped functioning, needs replacement or repair.",
+      "address": "Sector 9, House No. 25",
+      "createdAt": "2024-01-17T16:30:00Z",
+      "priority": "",
+      "assignedTo": "Meter Department"
+    },
+    {
+      "_id": "c7",
+      "title": "Street light flickering",
+      "department": "Electricity",
+      "status": "Resolved",
+      "description": "Street light constantly flickering at main crossing, causing visibility issues.",
+      "address": "Sector 11 Crossing",
+      "createdAt": "2024-01-11T13:10:00Z",
+      "priority": "",
+      "assignedTo": "Street Light Maintenance"
+    },
+    {
+      "_id": "c8",
+      "title": "Electrical pole leaning dangerously",
+      "department": "Electricity",
+      "status": "Pending",
+      "description": "Electric pole leaning at 45-degree angle, risk of falling during storms.",
+      "address": "Near Main Market, Sector 4",
+      "createdAt": "2024-01-18T07:55:00Z",
+      "priority": "",
+      "assignedTo": "Infrastructure Team"
+    },
+    {
+      "_id": "c9",
+      "title": "Power line sparking",
+      "department": "Electricity",
+      "status": "In Progress",
+      "description": "Power lines sparking during rain, potential fire hazard.",
+      "address": "Sector 6, Industrial Area",
+      "createdAt": "2024-01-19T12:30:00Z",
+      "priority": "",
+      "assignedTo": "Emergency Response Team"
+    },
+    {
+      "_id": "c10",
+      "title": "Inadequate street lighting",
+      "department": "Electricity",
+      "status": "Pending",
+      "description": "Insufficient street lights in new residential colony, dark spots at night.",
+      "address": "Sector 12, New Colony",
+      "createdAt": "2024-01-20T09:15:00Z",
+      "priority": "",
+      "assignedTo": "Street Light Department"
+    }
+  ]
+}
