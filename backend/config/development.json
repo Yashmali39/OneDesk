@@ -1,6 +1,3 @@
 {
-    "MONGODB_URI": "mongodb://127.0.0.1:27017"
+  "MONGODB_URI": "mongodb+srv://yashrmali3_db_user:Yash153580@appdb.jzza3s7.mongodb.net"
 }
-
-
-
