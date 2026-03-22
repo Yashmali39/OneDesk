@@ -1,8 +1,6 @@
 const multer = require("multer");
 const multerS3 = require("multer-s3");
-const AWS = require("../config/aws-config");
-
-const s3 = new AWS.S3();
+const s3 = require("../config/aws-config"); // already S3 instance
 
 const upload = multer({
   storage: multerS3({
