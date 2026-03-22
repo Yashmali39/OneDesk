@@ -9,6 +9,7 @@ const connectDB = require('./config/mongoose-connection');
 const dbgr = require('debug');
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+const PORT = process.env.PORT || 5000;
 
 app.use(cors({
   origin: [
@@ -18,21 +19,21 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 
 
-app.get('/', (req, res)=>{
-    res.send("backend is running...");
+app.get('/', (req, res) => {
+  res.send("backend is running...");
 })
 
-app.use('/users',userRouter)
- app.use('/citizen', citizenRouter);
- app.use('/department', departmentRouter);
+app.use('/users', userRouter)
+app.use('/citizen', citizenRouter);
+app.use('/department', departmentRouter);
 
 
 connectDB().then(() => {
-  app.listen(3000, () => {
-    console.log("Server running");
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
 });

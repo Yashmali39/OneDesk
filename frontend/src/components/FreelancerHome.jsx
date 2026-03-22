@@ -14,7 +14,7 @@ export default function FreelancerHome() {
   const fetchComplaints = async () => {
     try {
       if (!user?.citizenId) return;
-      const res = await fetch(`http://localhost:3000/citizen/find-complaint-data/${user.citizenId}`);
+      const res = await fetch(`http://13.218.220.39:5000/find-complaint-data/${user.citizenId}`);
       const data = await res.json();
       if (res.ok) {
         setJobs(data.complaints || []);
