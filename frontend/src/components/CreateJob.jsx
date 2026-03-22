@@ -41,7 +41,7 @@ const CreateJob = () => {
     };
 
     try {
-      const res = await fetch(`http://localhost:3000/client/create/job/${id}`, {
+      const res = await fetch(`http://13.218.220.39:5000/client/create/job/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

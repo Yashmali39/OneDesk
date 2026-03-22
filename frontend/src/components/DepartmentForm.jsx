@@ -71,7 +71,7 @@ export default function DepartmentForm() {
                 userId: id
             };
 
-            const response = await fetch(`http://localhost:3000/department/create/${id}`, {
+            const response = await fetch(`http://13.218.220.39:5000/department/create/${id}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

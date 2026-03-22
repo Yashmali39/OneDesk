@@ -7,7 +7,7 @@ const Logout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://localhost:3000/users/logout`, {
+    fetch(`http://13.218.220.39:5000/users/logout`, {
       method: 'POST',
       credentials: 'include'
     })

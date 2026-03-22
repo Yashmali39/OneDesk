@@ -15,7 +15,7 @@ const SavedJobs = ({ savedJobs: initialSavedJobs }) => {
 
     const handleSave = async (id) => {
         try {
-            const res = await fetch(`http://localhost:3000/freelancer/jobs/save/${id}`, {
+            const res = await fetch(`http://localhost:5000/freelancer/jobs/save/${id}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

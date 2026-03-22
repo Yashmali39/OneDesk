@@ -79,7 +79,7 @@ export default function CitizenForm() {
         userId: id
       };
 
-      const response = await fetch(`http://localhost:3000/citizen/create/${id}`, {
+      const response = await fetch(`http://13.218.220.39:5000/citizen/create/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

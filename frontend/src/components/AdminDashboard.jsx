@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   // Fetch all departments
   const fetchDepartments = async () => {
     try {
-      const res = await fetch("http://localhost:3000/department/find-all-departments");
+      const res = await fetch("http://13.218.220.39:5000/department/find-all-departments");
       const data = await res.json();
       if (res.ok) {
         setDepartments(data.departments);

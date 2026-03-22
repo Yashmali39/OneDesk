@@ -9,7 +9,7 @@ const Department = () => {
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/client/jobs/${id}`)
+    fetch(`http://13.218.220.39:5000client/jobs/${id}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data.jobs)) {

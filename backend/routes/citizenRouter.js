@@ -6,6 +6,7 @@ const citizenModel = require('../models/citizen-model');
 const complaintModel = require('../models/complaint-model');
 const departmentModel = require('../models/department-model')
 const isloggedin = require('../middlewares/isLoggedin');
+const upload = require("../utils/s3Upload");
 
 
 router.post('/create/:id', async (req, res) => {
@@ -107,108 +108,118 @@ router.get('/find-complaint-data/:id', async (req, res) => {
     }
 });
 
-router.post("/send-complaint/:id", async (req, res) => {
-  try {
-    const citizenId = req.params.id;
-    const body = req.body || {};
+const upload = require("../utils/s3Upload");
 
-    // Destructure possible top-level fields
-    const {
-      complaintTitle,
-      department,      // string (e.g., "Water Supply" or departmentName)
-      complaintType,
-      description,
-      images
-    } = body;
+router.post(
+  "/send-complaint/:id",
+  upload.array("images", 5),   // ✅ S3 upload middleware
+  async (req, res) => {
+    try {
+      const citizenId = req.params.id;
+      const body = req.body || {};
 
-    // Address can be sent either as body.address object OR separate fields
-    const addressFromBody = body.address || {};
-    const {
-      houseNumber,
-      street,
-      areaOrVillage,
-      cityOrTown,
-      taluka,
-      district,
-      state,
-      pincode,
-      landmark
-    } = addressFromBody;
+      // Destructure fields
+      const {
+        complaintTitle,
+        department,
+        complaintType,
+        description,
+      } = body;
 
-    // fallback to individual fields if address object wasn't provided
-    const address = {
-      houseNumber: houseNumber ?? body["address.houseNumber"] ?? body.houseNumber ?? "",
-      street: street ?? body["address.street"] ?? body.street ?? "",
-      areaOrVillage: areaOrVillage ?? body["address.areaOrVillage"] ?? body.areaOrVillage ?? "",
-      cityOrTown: cityOrTown ?? body["address.cityOrTown"] ?? body.cityOrTown ?? "",
-      taluka: taluka ?? body["address.taluka"] ?? body.taluka ?? "",
-      district: district ?? body["address.district"] ?? body.district ?? "",
-      state: state ?? body["address.state"] ?? body.state ?? "Maharashtra",
-      pincode: pincode ?? body["address.pincode"] ?? body.pincode ?? "",
-      landmark: landmark ?? body["address.landmark"] ?? body.landmark ?? ""
-     
-    };
+      // Address handling
+      const addressFromBody = body.address || {};
+      const {
+        houseNumber,
+        street,
+        areaOrVillage,
+        cityOrTown,
+        taluka,
+        district,
+        state,
+        pincode,
+        landmark
+      } = addressFromBody;
 
-    // 1) Validate citizen exists
-    const citizen = await citizenModel.findById(citizenId);
-    if (!citizen) {
-      return res.status(404).json({ message: "Citizen not found" });
+      const address = {
+        houseNumber: houseNumber ?? body["address.houseNumber"] ?? body.houseNumber ?? "",
+        street: street ?? body["address.street"] ?? body.street ?? "",
+        areaOrVillage: areaOrVillage ?? body["address.areaOrVillage"] ?? body.areaOrVillage ?? "",
+        cityOrTown: cityOrTown ?? body["address.cityOrTown"] ?? body.cityOrTown ?? "",
+        taluka: taluka ?? body["address.taluka"] ?? body.taluka ?? "",
+        district: district ?? body["address.district"] ?? body.district ?? "",
+        state: state ?? body["address.state"] ?? body.state ?? "Maharashtra",
+        pincode: pincode ?? body["address.pincode"] ?? body.pincode ?? "",
+        landmark: landmark ?? body["address.landmark"] ?? body.landmark ?? ""
+      };
+
+      // ✅ 1) Check citizen
+      const citizen = await citizenModel.findById(citizenId);
+      if (!citizen) {
+        return res.status(404).json({ message: "Citizen not found" });
+      }
+
+      // ✅ 2) Find department
+      const dept = await departmentModel.findOne({
+        $or: [
+          { departmentName: department },
+          { departmentType: department }
+        ]
+      });
+
+      if (!dept) {
+        return res.status(404).json({ message: "Department not found" });
+      }
+
+      // ✅ 3) Validate required fields
+      if (!complaintTitle || !description || !complaintType) {
+        return res.status(400).json({
+          message: "Missing required fields: complaintTitle, complaintType, description"
+        });
+      }
+
+      // 🔥 ✅ 4) GET S3 IMAGE URLs
+      const imageUrls = req.files?.map(file => file.location) || [];
+
+      // ✅ 5) Create complaint
+      const complaint = new complaintModel({
+        complaintTitle: complaintTitle.trim(),
+        department,
+        complaintType,
+        description: description.trim(),
+        address,
+        images: imageUrls,   // 🔥 S3 URLs stored here
+
+        citizenId: citizen._id,
+        departmentID: dept._id
+      });
+
+      const savedComplaint = await complaint.save();
+
+      // ✅ 6) Update citizen
+      if (!Array.isArray(citizen.complaints)) citizen.complaints = [];
+      citizen.complaints.push(savedComplaint._id);
+      await citizen.save();
+
+      // ✅ 7) Update department
+      if (!Array.isArray(dept.complaints)) dept.complaints = [];
+      dept.complaints.push(savedComplaint._id);
+      await dept.save();
+
+      // ✅ RESPONSE
+      return res.status(201).json({
+        message: "Complaint submitted successfully",
+        complaint: savedComplaint,
+      });
+
+    } catch (err) {
+      console.error("Error submitting complaint:", err);
+      return res.status(500).json({
+        message: "Server error while submitting complaint",
+        error: err.message,
+      });
     }
-
-    // 2) Find department by departmentName OR departmentType (robust lookup)
-    const dept = await departmentModel.findOne({
-      $or: [
-        { departmentName: department },
-        { departmentType: department }
-      ]
-    });
-
-    if (!dept) {
-      return res.status(404).json({ message: "Department not found" });
-    }
-
-    // 3) Validate required fields
-    if (!complaintTitle || !description || !complaintType) {
-      return res.status(400).json({ message: "Missing required fields: complaintTitle, complaintType, description" });
-    }
-
-    // 4) Create complaint document
-    const complaint = new complaintModel({
-      complaintTitle: complaintTitle.trim(),
-      department: department,            // keep the string for quick display
-      complaintType,
-      description: description.trim(),
-      address,
-      images: Array.isArray(images) ? images : (images ? [images] : []),
-
-      citizenId: citizen._id,
-
-      departmentID: dept._id
-    });
-
-    const savedComplaint = await complaint.save();
-
-    if (!Array.isArray(citizen.complaints)) citizen.complaints = [];
-    citizen.complaints.push(savedComplaint._id);
-    await citizen.save();
-
-    if (!Array.isArray(dept.complaints)) dept.complaints = [];
-    dept.complaints.push(savedComplaint._id);
-    await dept.save();
-
-    return res.status(201).json({
-      message: "Complaint submitted successfully",
-      complaint: savedComplaint,
-    });
-
-  } catch (err) {
-    console.error("Error submitting complaint:", err);
-    return res.status(500).json({
-      message: "Server error while submitting complaint",
-      error: err.message,
-    });
   }
-});
+);
 
 
 module.exports = router;

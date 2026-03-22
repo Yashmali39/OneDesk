@@ -14,7 +14,7 @@ const ClientHome = () => {
         if (!user?.departmentId) return;
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:3000/department/find-complaint-data/${user.departmentId}`);
+            const res = await fetch(`http://13.218.220.39:5000/department/find-complaint-data/${user.departmentId}`);
             const data = await res.json();
             if (res.ok) {
                 setComplaints(data.complaints || []);

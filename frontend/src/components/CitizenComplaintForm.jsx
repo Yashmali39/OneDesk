@@ -42,6 +42,7 @@ const CitizenComplaintForm = ({ user, onComplaintAdded }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
         if (name.includes("address.")) {
             const key = name.split(".")[1];
             setFormData((prev) => ({
@@ -53,6 +54,14 @@ const CitizenComplaintForm = ({ user, onComplaintAdded }) => {
         }
     };
 
+    // ✅ HANDLE FILE INPUT
+    const handleFileChange = (e) => {
+        setFormData((prev) => ({
+            ...prev,
+            images: e.target.files,
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -61,14 +70,30 @@ const CitizenComplaintForm = ({ user, onComplaintAdded }) => {
             return;
         }
 
-        console.log(user.citizenId)
         try {
+            // ✅ CREATE FORMDATA
+            const formDataToSend = new FormData();
+
+            formDataToSend.append("complaintTitle", formData.complaintTitle);
+            formDataToSend.append("department", formData.department);
+            formDataToSend.append("complaintType", formData.complaintType);
+            formDataToSend.append("description", formData.description);
+
+            // address
+            Object.keys(formData.address).forEach((key) => {
+                formDataToSend.append(`address.${key}`, formData.address[key]);
+            });
+
+            // images
+            for (let i = 0; i < formData.images.length; i++) {
+                formDataToSend.append("images", formData.images[i]);
+            }
+
             const res = await fetch(
-                `http://localhost:3000/citizen/send-complaint/${user.citizenId}`,
+                `http://13.218.220.39:5000/citizen/send-complaint/${user.citizenId}`,
                 {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(formData),
+                    body: formDataToSend, // ❗ NO JSON HEADERS
                 }
             );
 
@@ -76,6 +101,7 @@ const CitizenComplaintForm = ({ user, onComplaintAdded }) => {
 
             if (res.ok) {
                 toast.success("Complaint submitted successfully!");
+
                 setFormData({
                     complaintTitle: "",
                     department: "",
@@ -94,6 +120,7 @@ const CitizenComplaintForm = ({ user, onComplaintAdded }) => {
                     },
                     images: [],
                 });
+
                 if (onComplaintAdded) onComplaintAdded();
             } else {
                 toast.error(data.message || "Something went wrong!");
@@ -111,119 +138,93 @@ const CitizenComplaintForm = ({ user, onComplaintAdded }) => {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Row 1 - Title + Department */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-gray-700 text-sm font-medium mb-1">
-                            Complaint Title
-                        </label>
-                        <input
-                            type="text"
-                            name="complaintTitle"
-                            value={formData.complaintTitle}
-                            onChange={handleChange}
-                            required
-                            placeholder="Enter complaint title"
-                            className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
-                        />
-                    </div>
 
-                    <div>
-                        <label className="block text-gray-700 text-sm font-medium mb-1">
-                            Department
-                        </label>
-                        <select
-                            name="department"
-                            value={formData.department}
-                            onChange={handleChange}
-                            required
-                            className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
-                        >
-                            <option value="">Select Department</option>
-                            {Object.keys(departmentComplaintMap).map((dept) => (
-                                <option key={dept} value={dept}>
-                                    {dept}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                {/* Title + Department */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                        type="text"
+                        name="complaintTitle"
+                        value={formData.complaintTitle}
+                        onChange={handleChange}
+                        required
+                        placeholder="Complaint Title"
+                        className="w-full p-2 border rounded-lg"
+                    />
+
+                    <select
+                        name="department"
+                        value={formData.department}
+                        onChange={handleChange}
+                        required
+                        className="w-full p-2 border rounded-lg"
+                    >
+                        <option value="">Select Department</option>
+                        {Object.keys(departmentComplaintMap).map((dept) => (
+                            <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                    </select>
                 </div>
 
-                {/* Row 2 - Complaint Type + Priority */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-gray-700 text-sm font-medium mb-1">
-                            Complaint Type
-                        </label>
-                        <select
-                            name="complaintType"
-                            value={formData.complaintType}
-                            onChange={handleChange}
-                            required
-                            disabled={!formData.department}
-                            className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
-                        >
-                            <option value="">Select Complaint Type</option>
-                            {complaintTypes.map((type) => (
-                                <option key={type} value={type}>
-                                    {type}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    
-                </div>
+                {/* Complaint Type */}
+                <select
+                    name="complaintType"
+                    value={formData.complaintType}
+                    onChange={handleChange}
+                    required
+                    disabled={!formData.department}
+                    className="w-full p-2 border rounded-lg"
+                >
+                    <option value="">Select Complaint Type</option>
+                    {complaintTypes.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
+                </select>
 
                 {/* Description */}
-                <div>
-                    <label className="block text-gray-700 text-sm font-medium mb-1">
-                        Description
-                    </label>
-                    <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        rows="3"
-                        required
-                        placeholder="Describe your complaint..."
-                        className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
-                    />
+                <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows="3"
+                    required
+                    placeholder="Describe your complaint..."
+                    className="w-full p-2 border rounded-lg"
+                />
+
+                {/* Address */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {Object.keys(formData.address).map((key) => (
+                        <input
+                            key={key}
+                            name={`address.${key}`}
+                            placeholder={key}
+                            value={formData.address[key]}
+                            onChange={handleChange}
+                            className="border p-2 rounded-lg"
+                        />
+                    ))}
                 </div>
 
-                {/* Address Section */}
-                <div>
-                    <h3 className="text-sm font-semibold text-gray-800 mb-2">
-                        Address Details
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {Object.keys(formData.address).map((key) => (
-                            <input
-                                key={key}
-                                name={`address.${key}`}
-                                placeholder={
-                                    key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1")
-                                }
-                                value={formData.address[key]}
-                                onChange={handleChange}
-                                className="border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
-                            />
-                        ))}
-                    </div>
-                </div>
+                {/* 🔥 FILE INPUT */}
+                <input
+                    type="file"
+                    multiple
+                    onChange={handleFileChange}
+                    className="w-full"
+                />
 
                 {/* Submit */}
                 <div className="flex justify-center">
                     <button
                         type="submit"
-                        className="bg-blue-600 text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                        className="bg-blue-600 text-white px-8 py-2 rounded-lg"
                     >
                         Submit Complaint
                     </button>
                 </div>
             </form>
 
-            <ToastContainer position="top-center z-20" autoClose={2000} />
+            <ToastContainer position="top-center" autoClose={2000} />
         </div>
     );
 };

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
       // Fetch user on app load
       const checkAuth = async () => {
         try {
-          const res = await fetch('http://localhost:3000/users/api/me', {
+          const res = await fetch('http://13.218.220.39:5000/users/api/me', {
             credentials: 'include' 
           });
           if (res.ok) {
