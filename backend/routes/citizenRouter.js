@@ -108,7 +108,6 @@ router.get('/find-complaint-data/:id', async (req, res) => {
   }
 });
 
-const upload = require("../utils/s3Upload");
 
 router.post(
   "/send-complaint/:id",
