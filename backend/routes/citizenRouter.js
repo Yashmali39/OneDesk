@@ -10,102 +10,102 @@ const upload = require("../utils/s3Upload");
 
 
 router.post('/create/:id', async (req, res) => {
-    try {
-        const {
-            profilePhoto,
-            fullName,
-            gender,
-            age,
-            contactNumber,
-            email,
-            aadhaarNumber,
-            address,
-            occupation,
-            education
-        } = req.body;
+  try {
+    const {
+      profilePhoto,
+      fullName,
+      gender,
+      age,
+      contactNumber,
+      email,
+      aadhaarNumber,
+      address,
+      occupation,
+      education
+    } = req.body;
 
-        // Create citizen entry
-        const citizen = await citizenModel.create({
-            profilePhoto,
-            fullName,
-            gender,
-            age,
-            contactNumber,
-            email,
-            aadhaarNumber,
-            address: {
-                houseNo: address.houseNo,
-                street: address.street,
-                area: address.area,
-                landmark: address.landmark,
-                villageOrCity: address.villageOrCity,
-                taluka: address.taluka,
-                district: address.district,
-                state: address.state,
-                pincode: address.pincode
-            },
-            occupation,
-            education,
-            userId: req.params.id
-        });
+    // Create citizen entry
+    const citizen = await citizenModel.create({
+      profilePhoto,
+      fullName,
+      gender,
+      age,
+      contactNumber,
+      email,
+      aadhaarNumber,
+      address: {
+        houseNo: address.houseNo,
+        street: address.street,
+        area: address.area,
+        landmark: address.landmark,
+        villageOrCity: address.villageOrCity,
+        taluka: address.taluka,
+        district: address.district,
+        state: address.state,
+        pincode: address.pincode
+      },
+      occupation,
+      education,
+      userId: req.params.id
+    });
 
-        // Link citizen with the user
-        const user = await userModel.findById(req.params.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
+    // Link citizen with the user
+    const user = await userModel.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-        user.citizenId = citizen._id;
-        await user.save();
+    user.citizenId = citizen._id;
+    await user.save();
 
-        res.status(201).json({
-            message: "Citizen profile created successfully",
-            citizen: {
-                _id: citizen._id,
-                fullName: citizen.fullName,
-                gender: citizen.gender,
-                age: citizen.age,
-                contactNumber: citizen.contactNumber,
-                email: citizen.email,
-                aadhaarNumber: citizen.aadhaarNumber,
-                address: citizen.address,
-                occupation: citizen.occupation,
-                education: citizen.education,
-                userId: citizen.userId,
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    res.status(201).json({
+      message: "Citizen profile created successfully",
+      citizen: {
+        _id: citizen._id,
+        fullName: citizen.fullName,
+        gender: citizen.gender,
+        age: citizen.age,
+        contactNumber: citizen.contactNumber,
+        email: citizen.email,
+        aadhaarNumber: citizen.aadhaarNumber,
+        address: citizen.address,
+        occupation: citizen.occupation,
+        education: citizen.education,
+        userId: citizen.userId,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 router.get('/find-complaint-data/:id', async (req, res) => {
-    try {
-        const citizen = await citizenModel.findOne({ _id: req.params.id });
-        if (citizen) {
-            const complaints = await complaintModel
-                .find({ _id: { $in: citizen.complaints } })
-                // .populate("department") // replace with actual field name
-                // .populate("citizen");
+  try {
+    const citizen = await citizenModel.findOne({ _id: req.params.id });
+    if (citizen) {
+      const complaints = await complaintModel
+        .find({ _id: { $in: citizen.complaints } })
+      // .populate("department") // replace with actual field name
+      // .populate("citizen");
 
 
-            const total_complaints = citizen.complaints.length;
-            const resolve_complaints = citizen.resolvedComplaints.length;
-            const pending_complaints = total_complaints - resolve_complaints;
+      const total_complaints = citizen.complaints.length;
+      const resolve_complaints = citizen.resolvedComplaints.length;
+      const pending_complaints = total_complaints - resolve_complaints;
 
-            const data = {
-                total_complaints,
-                resolve_complaints,
-                pending_complaints,
-                complaints
-            };
+      const data = {
+        total_complaints,
+        resolve_complaints,
+        pending_complaints,
+        complaints
+      };
 
-            res.status(200).json(data); // send structured data
-        } else {
-            res.status(404).json({ message: "Citizen not found" });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error", error: error.message });
+      res.status(200).json(data); // send structured data
+    } else {
+      res.status(404).json({ message: "Citizen not found" });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 });
 
 const upload = require("../utils/s3Upload");
@@ -178,7 +178,14 @@ router.post(
       }
 
       // 🔥 ✅ 4) GET S3 IMAGE URLs
-      const imageUrls = req.files?.map(file => file.location) || [];
+      console.log("FILES:", req.files);
+      const imageUrls = (req.files || []).map(file => {
+        if (!file.location) {
+          console.error("S3 upload failed for file:", file);
+          return null;
+        }
+        return file.location;
+      }).filter(Boolean);
 
       // ✅ 5) Create complaint
       const complaint = new complaintModel({

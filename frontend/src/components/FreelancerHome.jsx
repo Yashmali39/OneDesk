@@ -11,16 +11,25 @@ export default function FreelancerHome() {
   const [saved, setSaved] = useState(false);
 
   // ✅ Fetch Complaints Data
+  // ✅ Fetch Complaints Data (FIXED)
   const fetchComplaints = async () => {
     try {
       if (!user?.citizenId) return;
-      const res = await fetch(`http://13.218.220.39:5000/find-complaint-data/${user.citizenId}`);
-      const data = await res.json();
-      if (res.ok) {
-        setJobs(data.complaints || []);
-      } else {
-        console.error(data.message || "Failed to fetch complaints");
+
+      const res = await fetch(
+        `http://13.218.220.39:5000/citizen/find-complaint-data/${user.citizenId}`
+      );
+
+      // 🔥 HANDLE ERROR PROPERLY
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Server Error:", text);
+        return;
       }
+
+      const data = await res.json();
+      setJobs(data.complaints || []);
+
     } catch (error) {
       console.error("Error fetching complaints:", error);
     }
@@ -148,7 +157,7 @@ export default function FreelancerHome() {
                     className={`px-4 py-2 rounded-lg transition ${c.isSaved
                       ? "bg-red-500 text-white hover:bg-red-600"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
+                      }`}
                   >
                     {c.isSaved ? "Unsave" : "Save"}
                   </button>
